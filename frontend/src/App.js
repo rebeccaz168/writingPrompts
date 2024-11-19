@@ -14,7 +14,13 @@ function App() {
 
   const generatePrompt = async () => {
     console.log("Generate the prompt right here");
-    // Add the API call here for generating prompts if needed
+    try {
+      const response = await fetch('http://127.0.0.1:8000/prompt');
+      const data = await response.json();
+      setPrompt(data.prompt); 
+    } catch (error) {
+      console.error("Error fetching prompts:", error);
+    }
   };
 
   return (
@@ -26,6 +32,7 @@ function App() {
           alignItems: 'center',
           gap: 3,
           paddingTop: 5,
+          color: 'pink'
         }}
       >
         <h1>Writing Prompt Generator</h1>
