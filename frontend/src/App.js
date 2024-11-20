@@ -1,27 +1,40 @@
 import './App.css';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import { Box, TextField, Select, MenuItem, InputLabel, FormControl, OutlinedInput, Button } from '@mui/material';
+import { Box, TextField, Select, MenuItem, InputLabel, FormControl, OutlinedInput, Button, Typography } from '@mui/material';
 import React, { useState } from "react";
+import RecommendedSong from './SongCard';
 
 function App() {
   const [prompt, setPrompt] = useState("");
-  const [age, setAge] = useState("");
   const [mood, setMood] = useState("");
+  const [song, setSong] = useState("");
 
-  const genres = ["Fantasy", "Science Fiction", "Mystery", "Romance", "Horror"];
-  const [genre, setGenre] = useState(genres[0]);
+  const categories = ["Self Development", "Well-being", "Memories", "Relationships", "Gratitude"];
+  const [category, setCategory] = useState(categories[0]);
 
-  const generatePrompt = async () => {
-    console.log("Generate the prompt right here");
+  // Function to fetch the writing prompt from the backend
+  async function generatePrompt() {
     try {
-      const response = await fetch('http://127.0.0.1:8000/prompt');
-      const data = await response.json();
-      setPrompt(data.prompt); 
+      // Construct the URL with query parameters
+      const response = await fetch(`http://127.0.0.1:8000/prompt?mood=${mood}&category=${category}`);
+      
+      // Check if the response is OK
+      if (response.ok) {
+        console.log(response)
+        const data = await response.json(); // Parse the response JSON
+        console.log(data.prompt)
+        setPrompt(data.prompt)
+        console.log(data.song)
+        setSong(data.song)
+      } else {
+        throw new Error('Failed to fetch prompt');
+      }
     } catch (error) {
-      console.error("Error fetching prompts:", error);
+      console.error('Error:', error);
+      return 'Error fetching prompt';
     }
-  };
+  }
 
   return (
     <div className="App">
@@ -48,13 +61,6 @@ function App() {
         >
           <TextField
             sx={{ width: 150 }}
-            id="age"
-            label="Age"
-            variant="outlined"
-            onChange={(e) => setAge(e.target.value)}
-          />
-          <TextField
-            sx={{ width: 150 }}
             id="mood"
             label="current mood?"
             variant="outlined"
@@ -65,13 +71,13 @@ function App() {
             <Select
               labelId="genre-label"
               id="demo-simple-select"
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
               input={<OutlinedInput label="Genre" />}
             >
-              {genres.map((genre) => (
-                <MenuItem key={genre} value={genre}>
-                  {genre}
+              {categories.map((category) => (
+                <MenuItem key={category} value={category}>
+                  {category}
                 </MenuItem>
               ))}
             </Select>
@@ -86,10 +92,25 @@ function App() {
         >
           Create Prompt
         </Button>
-
-        <Card sx={{ width: 600, mt: 3 }}>
+        {song ? (
+           <RecommendedSong song={song} />
+              ) : (
+             <div> Recommended Song </div> 
+            )}
+        <Card sx={{ width: 600, height: 600, mt: 3, overflowY: "auto" }}>
           <CardContent>
-            {prompt || "Your generated prompt will appear here."}
+            {prompt ? (
+              Object.entries(prompt).map(([header, content], index) => (
+                <div key={index} style={{ marginBottom: "16px" }}>
+                  <Typography variant="h6" gutterBottom>
+                    {header}
+                  </Typography>
+                  <Typography variant="body1">{content}</Typography>
+                </div>
+              ))
+            ) : (
+              "Your generated prompt will appear here."
+            )}
           </CardContent>
         </Card>
       </Box>
