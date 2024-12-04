@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-api_key = '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'
+api_key = os.getenv('GROQ_KEY')
 
 
 # Helper function to interact with Groq API
